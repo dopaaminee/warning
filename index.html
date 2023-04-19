@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warning</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div id="container" style="display: none;justify-content: center;align-items: center;height: 100vh;">
+        <span id="text1"></span>
+        <span id="text2"></span>
+        <svg id="filters">
+            <defs>
+                <filter id="threshold">
+                    <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0
+									0 1 0 0 0
+									0 0 1 0 0
+									0 0 0 255 -140" />
+                </filter>
+            </defs>
+        </svg>
+    </div>
+
+    <script>
+
+
+        const elts = {
+            text1: document.getElementById("text1"),
+            text2: document.getElementById("text2")
+        };
+
+
+        const texts = [
+            "💞",
+            "The moon is gorgeous tonight",
+        ];
+
+
+        const morphTime = 1;
+        const cooldownTime = 0.25;
+
+        let textIndex = texts.length - 1;
+        let timeL = new Date();
+        let morph = 0;
+        let cooldown = cooldownTime;
+
+        elts.text1.textContent = texts[textIndex % texts.length];
+        elts.text2.textContent = texts[(textIndex + 1) % texts.length];
+
+        function doMorph() {
+            morph -= cooldown;
+            cooldown = 0;
+
+            let fraction = morph / morphTime;
+
+            if (fraction > 1) {
+                cooldown = cooldownTime;
+                fraction = 1;
+            }
+
+            setMorph(fraction);
+        }
+
+        function setMorph(fraction) {
+
+            elts.text2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
+            elts.text2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+
+            fraction = 1 - fraction;
+            elts.text1.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
+            elts.text1.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+
+            elts.text1.textContent = texts[textIndex % texts.length];
+            elts.text2.textContent = texts[(textIndex + 1) % texts.length];
+        }
+
+        function doCooldown() {
+            morph = 0;
+
+            elts.text2.style.filter = "";
+            elts.text2.style.opacity = "100%";
+
+            elts.text1.style.filter = "";
+            elts.text1.style.opacity = "0%";
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            let newTime = new Date();
+            let shouldIncrementIndex = cooldown > 0;
+            let dt = (newTime - timeL) / 1000;
+            timeL = newTime;
+
+            cooldown -= dt;
+
+            if (cooldown <= 0) {
+                if (shouldIncrementIndex) {
+                    textIndex++;
+                }
+
+                doMorph();
+            } else {
+                doCooldown();
+            }
+        }
+        animate();
+    </script>
+
+    <div class="body" id="btn-push">
+        <div class="grid"></div>
+
+        <div class="warning"></div>
+
+        <div class="base">
+            <button id="activate">
+                <span></span>
+            </button>
+        </div>
+
+        <div class="box opened" id="cover">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <span></span><span></span>
+        </div>
+
+        <div class="hinges"></div>
+
+        <div class="text">
+            HD
+        </div>
+
+        <div id="panel">
+            <div id="msg">SAY YES DON'T SAY NO </div>
+            <div id="time">5</div>
+            <span id="accept">YES</span>
+            <span id="abort">NO</span>
+            <span id="detonate">DETONATE</span>
+        </div>
+
+        <div id="turn-off"></div>
+        <div id="closing"></div>
+
+        <div id="restart"><button id="reload"></button></div>
+
+        <div id="mute"></div>
+
+        <audio id="alarm">
+            <source src="https://cdn.josetxu.com/audio/self-destruct-count.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        var theCount;
+        var alarm = document.getElementById("alarm");
+        var panel = document.getElementById("panel");
+        var turnOff = document.getElementById("turn-off");
+        var turnOffHor = document.getElementById("closing");
+        var detonate = document.getElementById("detonate");
+        alarm.volume = 0.5;
+
+        var time = document.getElementById("time");
+        function showCountDown() {
+            time.innerText = time.innerText - 1;
+            if (time.innerText == 0) {
+                clearInterval(theCount);
+                time.classList.add("crono");
+                abort.classList.add("hide");
+                detonate.classList.add("show");
+                setTimeout(function () {
+                    turnOff.classList.add("close");
+                    turnOffHor.classList.add("close");
+                    reload.classList.add("show");
+                    alarm.pause();
+
+                    setTimeout(() => {
+                        document.querySelector('#btn-push').style.display = 'none';
+                        document.querySelector('#container').style.display = 'flex';
+
+                    }, 1000);
+
+                }, 1500);
+            }
+        }
+
+        document.querySelector("#accept").onclick = function () {
+            clearInterval(theCount);
+
+            turnOff.classList.add("close");
+            turnOffHor.classList.add("close");
+            reload.classList.add("show");
+            alarm.pause();
+
+            setTimeout(() => {
+                document.querySelector('#btn-push').style.display = 'none';
+                document.querySelector('#container').style.display = 'flex';
+
+            }, 500);
+
+        }
+
+        var cover = document.getElementById("cover");
+        cover.addEventListener("click", function () {
+            if (this.className == "box") this.classList.add("opened");
+            else this.classList.remove("opened");
+        });
+
+        var btn = document.getElementById("activate");
+        activate.addEventListener("click", function () {
+            this.classList.add("pushed");
+            alarm.load();
+            alarm.currentTime = 10.1;
+            alarm.play();
+            setTimeout(function () {
+                panel.classList.add("show");
+                theCount = setInterval(showCountDown, 1000);
+                alarm.load();
+                alarm.play();
+            }, 500);
+        });
+
+        let dem = 0;
+        var abort = document.getElementById("abort");
+        abort.addEventListener("click", function () {
+            if (dem == 0) {
+                dem += 1;
+                this.innerHTML = "YES"
+
+            } else {
+                clearInterval(theCount);
+
+                turnOff.classList.add("close");
+                turnOffHor.classList.add("close");
+                reload.classList.add("show");
+                alarm.pause();
+
+                setTimeout(() => {
+                    document.querySelector('#btn-push').style.display = 'none';
+                    document.querySelector('#container').style.display = 'flex';
+
+                }, 500);
+
+                ƒ
+            }
+        });
+
+        var reload = document.getElementById("restart");
+        reload.addEventListener("click", function () {
+            panel.classList.remove("show");
+            turnOff.classList.remove("close");
+            turnOffHor.classList.remove("close");
+            abort.classList.remove("hide");
+            detonate.classList.remove("show");
+            cover.classList.remove("opened");
+            btn.classList.remove("pushed");
+            this.classList.remove("show");
+            time.classList.remove("crono");
+            time.innerText = 9;
+        });
+
+        setTimeout(function () {
+            cover.classList.remove("opened");
+        }, 100);
+
+        var mute = document.getElementById("mute");
+        mute.addEventListener("click", function () {
+            if (this.className == "muted") {
+                alarm.muted = false;
+                this.classList.remove("muted");
+            } else {
+                alarm.muted = true;
+                this.classList.add("muted");
+            }
+        });
+
+    </script>
+</body>
+
+</html>
