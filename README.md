@@ -1,1 +1,1 @@
-# warning
+https://dopaaminee.github.io/warning/
